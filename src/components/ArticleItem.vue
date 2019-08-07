@@ -1,6 +1,6 @@
 <template>
-  <article>
-    <header v-if="!open">
+  <article :class="{'is-active': open}">
+    <header>
       <p class="Article__HeaderField">
         texto:
         <span>{{article.lang}}</span>
@@ -17,27 +17,55 @@
     <section>
       <h1>{{article.title}}</h1>
       <template v-if="open">
-        <!--TODO: -->
+        <dl>
+          <dt>Linguagem do artigo</dt>
+          <dd class="field">
+            <b-checkbox>{{languageName(article.lang)}}</b-checkbox>
+          </dd>
+        </dl>
       </template>
     </section>
     <footer>
-      <b-button size="is-small" type="is-light" icon-left="dots-horizontal"></b-button>
+      <b-button
+        v-if="!open"
+        @click="setActive"
+        size="is-small"
+        type="is-light"
+        icon-left="dots-horizontal"
+      ></b-button>
+      <template v-else>
+        <b-button @click="save" size="is-small" type="is-light">Salvar</b-button>
+        <a href="#cancel" @click.prevent="releaseActive">Cancelar</a>
+      </template>
     </footer>
   </article>
 </template>
 
 <script>
 import chroma from 'chroma-js';
+import ISO6391 from 'iso-639-1';
+
 export default {
   props: {
+    open: {
+      type: Boolean,
+      default: false
+    },
     article: {
       type: Object
     }
   },
-  data() {
-    return {
-      open: false
-    };
+  computed: {},
+  methods: {
+    languageName(langCode) {
+      return langCode ? ISO6391.getNativeName(langCode) : 'N/D';
+    },
+    setActive() {
+      this.$emit('setActive', this.article);
+    },
+    releaseActive() {
+      this.$emit('releaseActive', this.article);
+    }
   },
   directives: {
     scoreColorScale: {
@@ -64,6 +92,7 @@ article {
   padding: 5px;
   margin: 5px;
   font-family: Roboto, sans-serif;
+  box-sizing: border-box;
 }
 header {
   display: flex;
@@ -72,7 +101,7 @@ header {
 }
 
 h1 {
-  font-size: 18px;
+  font-size: 16px;
 }
 
 h1,
@@ -80,16 +109,43 @@ h2 {
   text-align: center;
 }
 
+article.is-active h1 {
+  display: none;
+}
+
 section,
 footer {
   padding: 15px;
 }
 footer {
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
 }
 
 .Article__HeaderField > span {
   font-weight: bold;
+}
+
+dl {
+  margin: 50px 0 10px;
+}
+
+dt {
+  font-style: normal;
+  font-weight: 300;
+  font-size: 12px;
+  line-height: 14px;
+
+  text-transform: uppercase;
+}
+
+dd {
+  font-style: normal;
+  font-weight: normal;
+  font-size: 16px;
+  line-height: 19px;
+  margin: 5px 0;
 }
 </style>
 

@@ -1,28 +1,65 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <aside class="ArticleList">
+      <virtual-list :size="400" :remain="2" :bench="30">
+        <ArticleItem
+          @setActive="setActive"
+          @releaseActive="releaseActive"
+          :open="isArticleActive(article.id)"
+          :article="article"
+          v-for="article of articles"
+          :key="article.id"
+        />
+      </virtual-list>
+    </aside>
+    <main>abacate</main>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import ArticleItem from './components/ArticleItem.vue';
+import virtualList from 'vue-virtual-scroll-list';
+
+import axios from 'axios';
 
 export default {
   name: 'app',
   components: {
-    HelloWorld
+    virtualList,
+    ArticleItem
+  },
+  data() {
+    return {
+      articles: [],
+      activeArticleId: 0
+    };
+  },
+  methods: {
+    setActive({ id }) {
+      this.activeArticleId = id;
+    },
+    isArticleActive(id) {
+      return id === this.activeArticleId;
+    },
+    releaseActive({ id }) {
+      this.activeArticleId = 0;
+    }
+  },
+  mounted() {
+    axios
+      .get('http://localhost:5000/api/articles')
+      .then(response => (this.articles = response.data));
   }
-}
+};
 </script>
 
 <style>
 #app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+  display: flex;
+}
+aside.ArticleList {
+  height: 100vh;
+  display: flex;
+  align-items: center;
 }
 </style>
