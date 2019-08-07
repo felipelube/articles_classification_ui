@@ -1,4 +1,4 @@
-# mirabilia_classification_web
+# articles_classification_ui
 
 ## Project setup
 ```
