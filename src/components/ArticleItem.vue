@@ -34,16 +34,9 @@
       </template>
     </section>
     <footer>
-      <b-button
-        v-if="!open"
-        @click="setActive"
-        size="is-small"
-        type="is-light"
-        icon-left="dots-horizontal"
-      ></b-button>
-      <template v-else>
+      <template v-if="open">
         <b-button @click="save" size="is-small" type="is-light">Salvar</b-button>
-        <a href="#cancel" @click.prevent="releaseActive">Cancelar</a>
+        <a href="#cancel" @click.prevent.stop="releaseActive">Cancelar</a>
       </template>
     </footer>
   </article>
@@ -52,6 +45,7 @@
 <script>
 import chroma from 'chroma-js';
 import ISO6391 from 'iso-639-1';
+import axios from 'axios';
 
 export default {
   props: {
@@ -81,6 +75,16 @@ export default {
     releaseActive() {
       this.$emit('releaseActive');
     },
+    save() {
+      axios
+        .post(`http://localhost:5000/api/article/${this.article.id}`, {
+          ...this.article,
+          reviewed: true
+        })
+        .then(() => {
+          this.$set(this.article, 'reviewed', true);
+          this.$emit('save');
+        });
     }
   },
   directives: {
