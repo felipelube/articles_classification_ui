@@ -1,5 +1,9 @@
 <template>
-  <article :class="{'is-active': open}">
+  <article
+    :id="`article-${article.id}`"
+    @click="setActive"
+    :class="{'is-active': open, 'is-reviewed': reviewed}"
+  >
     <header>
       <p class="Article__HeaderField">
         texto:
@@ -55,16 +59,21 @@ export default {
       type: Object
     }
   },
-  computed: {},
+  computed: {
+    reviewed() {
+      return this.article.reviewed === true;
+    },
+  },
   methods: {
     languageName(langCode) {
       return langCode ? ISO6391.getNativeName(langCode) : 'N/D';
     },
     setActive() {
-      this.$emit('setActive', this.article);
+      this.$emit('setActive', [this.article, this.$el.getAttribute('id')]);
     },
     releaseActive() {
-      this.$emit('releaseActive', this.article);
+      this.$emit('releaseActive');
+    },
     }
   },
   directives: {
@@ -93,7 +102,17 @@ article {
   margin: 5px;
   font-family: Roboto, sans-serif;
   box-sizing: border-box;
+  cursor: pointer;
 }
+article.is-active {
+  border-color: #000;
+  box-shadow: #ccc 1px 2px 6px;
+}
+
+article.is-reviewed {
+  border-color: #00ff00;
+}
+
 header {
   display: flex;
   font-size: 12px;
@@ -101,7 +120,7 @@ header {
 }
 
 h1 {
-  font-size: 16px;
+  font-size: 14px;
 }
 
 h1,
@@ -110,7 +129,7 @@ h2 {
 }
 
 article.is-active h1 {
-  display: none;
+  font-weight: 300;
 }
 
 section,
