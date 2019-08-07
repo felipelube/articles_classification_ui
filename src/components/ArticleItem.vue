@@ -24,7 +24,11 @@
         <dl>
           <dt>Linguagem do artigo</dt>
           <dd class="field">
-            <b-checkbox>{{languageName(article.lang)}}</b-checkbox>
+            <b-field>
+              <b-select v-model="article.lang" placeholder="Idioma" icon="earth">
+                <option :value="lang" v-for="lang in langCodes" :key="lang">{{languageName(lang)}}</option>
+              </b-select>
+            </b-field>
           </dd>
         </dl>
       </template>
@@ -63,6 +67,9 @@ export default {
     reviewed() {
       return this.article.reviewed === true;
     },
+    langCodes() {
+      return ISO6391.getAllCodes();
+    }
   },
   methods: {
     languageName(langCode) {
