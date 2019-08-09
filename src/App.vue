@@ -1,16 +1,19 @@
 <template>
   <div id="app">
     <div class="pdf-viewer-wrapper">
-      <pdf
-        v-if="currentArticlePDF"
-        :src="currentArticlePDF"
-        :page="1"
-        style="display: inline-block; width: 100%;"
-      ></pdf>
+      <component
+        v-if="activeView && activeView.components && activeView.components.left"
+        :is="activeView.components.left.name"
+        v-bind="activeView.components.left.attrs"
+      />
+      <!--
+      <pdf v-if="currentArticlePDF" :src="currentArticlePDF" :page="1"></pdf>
+      -->
     </div>
     <aside class="ArticleList">
       <virtual-list :size="400" :remain="2" :bench="30">
         <ArticleItem
+          @changeView="changeView"
           @setActive="setActive"
           @releaseActive="releaseActive"
           :open="isArticleActive(article)"
@@ -20,7 +23,18 @@
         />
       </virtual-list>
     </aside>
+    <div class="pdf-viewer-wrapper">
+      <component
+        v-if="activeView && activeView.components && activeView.components.right"
+        :is="activeView.components.right.name"
+        v-bind="activeView.components.right.attrs"
+      />
+      <!--
+      <pdf v-if="currentArticlePDF" :src="currentArticlePDF" :page="1"></pdf>
+      -->
+    </div>
 
+    <!--
     <div class="pdf-viewer-wrapper">
       <pdf
         v-if="currentArticlePDF"
@@ -29,6 +43,7 @@
         style="display: inline-block; width: 100%;"
       ></pdf>
     </div>
+    -->
   </div>
 </template>
 
@@ -49,7 +64,8 @@ export default {
   data() {
     return {
       arts: [],
-      activeArticle: {}
+      activeArticle: {},
+      activeView: {}
     };
   },
   methods: {
@@ -63,6 +79,10 @@ export default {
     },
     releaseActive() {
       this.activeArticle = {};
+      this.activeView = {};
+    },
+    changeView(view) {
+      this.activeView = view;
     }
   },
   computed: {

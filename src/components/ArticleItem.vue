@@ -21,16 +21,50 @@
     <section>
       <h1>{{article.title}}</h1>
       <template v-if="open">
-        <dl>
-          <dt>Linguagem do artigo</dt>
-          <dd class="field">
-            <b-field>
-              <b-select v-model="article.lang" placeholder="Idioma" icon="earth">
-                <option :value="lang" v-for="lang in langCodes" :key="lang">{{languageName(lang)}}</option>
-              </b-select>
-            </b-field>
-          </dd>
-        </dl>
+        <div class="fields">
+          <b-collapse class="card">
+            <div
+              slot="trigger"
+              slot-scope="props"
+              class="card-header"
+              role="button"
+              aria-controls="contentIdForA11y3"
+            >
+              <p class="card-header-title">Idiomas</p>
+              <a class="card-header-icon">
+                <b-icon :icon="props.open ? 'menu-down' : 'menu-up'"></b-icon>
+              </a>
+            </div>
+            <div class="card-content">
+              <LanguageField
+                @focus="changeView('language')"
+                v-model="article.title_lang"
+                placeholder="Idioma (título)"
+                label="Idioma (tit)"
+                icon="earth"
+              />
+
+              <LanguageField
+                @focus="changeView('language')"
+                v-model="article.abstract_lang"
+                placeholder="Idioma"
+                label="Idioma (abs)"
+                icon="earth"
+              />
+
+              <LanguageField
+                @focus="changeView('language')"
+                v-model="article.lang"
+                placeholder="Idioma"
+                label="Idioma (corp)"
+                icon="earth"
+              />
+            </div>
+            <footer class="card-footer">
+              <a class="card-footer-item">Salvar</a>
+            </footer>
+          </b-collapse>
+        </div>
       </template>
     </section>
     <footer>
@@ -44,10 +78,13 @@
 
 <script>
 import chroma from 'chroma-js';
-import ISO6391 from 'iso-639-1';
 import axios from 'axios';
+import LanguageField from './LanguageField';
 
 export default {
+  components: {
+    LanguageField
+  },
   props: {
     open: {
       type: Boolean,
@@ -60,20 +97,58 @@ export default {
   computed: {
     reviewed() {
       return this.article.reviewed === true;
-    },
-    langCodes() {
-      return ISO6391.getAllCodes();
     }
   },
+  data() {
+    return {
+      activeView: ''
+    };
+  },
   methods: {
-    languageName(langCode) {
-      return langCode ? ISO6391.getNativeName(langCode) : 'N/D';
-    },
     setActive() {
       this.$emit('setActive', [this.article, this.$el.getAttribute('id')]);
+      this.changeView('language');
     },
     releaseActive() {
       this.$emit('releaseActive');
+    },
+    changeView(name) {
+      this.activeView = this.views(name);
+
+      this.$emit('changeView', this.activeView);
+    },
+    views(name) {
+      let selectedView;
+      switch (name) {
+        case 'language': {
+          selectedView = {
+            name: 'language',
+            components: {
+              left: {
+                name: 'pdf',
+                attrs: {
+                  src: this.article.pdf_url,
+                  page: 1,
+                  style: 'display: inline-block; width: 100%;'
+                }
+              },
+              right: {
+                name: 'pdf',
+                attrs: {
+                  src: this.article.pdf_url,
+                  page: 5,
+                  style: 'display: inline-block; width: 100%;'
+                }
+              }
+            }
+          };
+          break;
+        }
+        default: {
+          return '';
+        }
+      }
+      return selectedView;
     },
     save() {
       axios
@@ -107,7 +182,7 @@ export default {
 
 <style scoped>
 article {
-  width: 250px;
+  width: 350px;
   border: solid 1px #ccc;
   padding: 5px;
   margin: 5px;
@@ -147,6 +222,7 @@ section,
 footer {
   padding: 15px;
 }
+
 footer {
   display: flex;
   align-items: center;
@@ -157,25 +233,8 @@ footer {
   font-weight: bold;
 }
 
-dl {
+div.fields {
   margin: 50px 0 10px;
-}
-
-dt {
-  font-style: normal;
-  font-weight: 300;
-  font-size: 12px;
-  line-height: 14px;
-
-  text-transform: uppercase;
-}
-
-dd {
-  font-style: normal;
-  font-weight: normal;
-  font-size: 16px;
-  line-height: 19px;
-  margin: 5px 0;
 }
 </style>
 
