@@ -22,48 +22,22 @@
       <h1>{{article.title}}</h1>
       <template v-if="open">
         <div class="fields">
-          <b-collapse class="card">
-            <div
-              slot="trigger"
-              slot-scope="props"
-              class="card-header"
-              role="button"
-              aria-controls="contentIdForA11y3"
-            >
-              <p class="card-header-title">Idiomas</p>
-              <a class="card-header-icon">
-                <b-icon :icon="props.open ? 'menu-down' : 'menu-up'"></b-icon>
-              </a>
-            </div>
-            <div class="card-content">
-              <LanguageField
-                @focus="changeView('language')"
-                v-model="article.title_lang"
-                placeholder="Idioma (título)"
-                label="Idioma (tit)"
-                icon="earth"
-              />
-
-              <LanguageField
-                @focus="changeView('language')"
-                v-model="article.abstract_lang"
-                placeholder="Idioma"
-                label="Idioma (abs)"
-                icon="earth"
-              />
-
-              <LanguageField
-                @focus="changeView('language')"
-                v-model="article.lang"
-                placeholder="Idioma"
-                label="Idioma (corp)"
-                icon="earth"
-              />
-            </div>
-            <footer class="card-footer">
-              <a class="card-footer-item">Salvar</a>
-            </footer>
-          </b-collapse>
+          <b-field>
+            <LanguageField
+              @focus="changeView('language')"
+              v-model="article.lang"
+              placeholder="Idioma"
+              label="Idioma do artigo"
+              icon="earth"
+            />
+          </b-field>
+          <b-field v-for="field in fieldsForRequirements" :key="field.name">
+            <b-button size="is-medium" @click="changeView(field.view)" icon-left="feature-search"></b-button>
+            <component
+              :is="field.component"
+              v-model="article.requirements[field.name]"
+            >{{field.title}}</component>
+          </b-field>
         </div>
       </template>
     </section>
@@ -97,11 +71,77 @@ export default {
   computed: {
     reviewed() {
       return this.article.reviewed === true;
+    },
+    art() {
+      return {
+        ...this.article,
+        pdfURL: this.article.pdfURL.replace('http://localhost:8888/', '/')
+      };
+    },
+    fieldsForRequirements() {
+      return this.fieldsInfo.reduce((fields, field) => {
+        if (
+          this.article.requirements &&
+          field.name in this.article.requirements &&
+          field.component
+        ) {
+          fields.push(field);
+        }
+        return fields;
+      }, []);
     }
   },
   data() {
     return {
-      activeView: ''
+      activeView: '',
+      fieldsInfo: [
+        {
+          name: 'titleLangEnglish',
+          title: 'Título em inglês?',
+          component: 'b-checkbox',
+          view: 'language'
+        },
+        {
+          name: 'titlePresence',
+          title: 'Título presente no PDF?',
+          component: 'b-checkbox',
+          view: 'language'
+        },
+        {
+          name: 'lang',
+          title: 'Linguagem do artigo',
+          component: 'LanguageField'
+        },
+        {
+          name: 'abstractLangEnglish',
+          title: 'Abstract em inglês?',
+          component: 'b-checkbox'
+        },
+        {
+          name: 'abstractPresence',
+          title: 'Abstract presente no PDF?',
+          component: 'b-checkbox'
+        },
+        {
+          name: 'referencesInRomanScript',
+          title: 'Todas referências no alfabeto romano?',
+          component: 'b-checkbox'
+        },
+        {
+          name: 'referencesPage',
+          title: 'Página com as referências'
+        },
+        {
+          name: 'authorsPresence',
+          title: 'Autores presentes no PDF?',
+          component: 'b-checkbox'
+        },
+        {
+          name: 'originalTitlePresence',
+          title: 'Titulo original presente no PDF?',
+          component: 'b-checkbox'
+        }
+      ]
     };
   },
   methods: {
@@ -114,7 +154,6 @@ export default {
     },
     changeView(name) {
       this.activeView = this.views(name);
-
       this.$emit('changeView', this.activeView);
     },
     views(name) {
@@ -127,7 +166,7 @@ export default {
               left: {
                 name: 'pdf',
                 attrs: {
-                  src: this.article.pdf_url,
+                  src: this.article.data.pdfURL,
                   page: 1,
                   style: 'display: inline-block; width: 100%;'
                 }
@@ -135,7 +174,7 @@ export default {
               right: {
                 name: 'pdf',
                 attrs: {
-                  src: this.article.pdf_url,
+                  src: this.article.data.pdfURL,
                   page: 5,
                   style: 'display: inline-block; width: 100%;'
                 }
