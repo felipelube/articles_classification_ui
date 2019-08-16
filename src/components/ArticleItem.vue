@@ -22,28 +22,30 @@
       <h1>{{art.title}}</h1>
       <template v-if="open">
         <div class="fields">
-          <b-field>
-            <LanguageField
-              @info="changeView('languageArticle')"
-              v-model="art.lang"
-              placeholder="Idioma"
-              label="Idioma do artigo"
-              icon="earth"
-            />
-          </b-field>
-          <b-field v-for="field in fieldsForRequirements" :key="field.name">
-            <b-button size="is-small" @click="changeView(field.view)" icon-left="feature-search"></b-button>
-            <component :is="field.component" v-model="art.requirements[field.name]">{{field.title}}</component>
-          </b-field>
+          <RequirementField
+            @save="fieldSaved(field.name)"
+            @opened="changeView(field.view)"
+            v-for="field in fieldsForRequirements"
+            :key="field.name"
+          >
+            <template v-slot:summary>
+              <span
+                v-reviewed-style="art.requirements[field.name]"
+              >{{summaryFor(art.requirements[field.name].value)}}</span>
+            </template>
+            <template v-slot:title>
+              <span v-reviewed-style="art.requirements[field.name]">{{field.title}}</span>
+            </template>
+            <b-field>
+              <component
+                :is="field.component"
+                v-model="art.requirements[field.name].value"
+              >{{field.title}}</component>
+            </b-field>
+          </RequirementField>
         </div>
       </template>
     </section>
-    <footer>
-      <template v-if="open">
-        <b-button @click="save" size="is-small" type="is-light">Salvar</b-button>
-        <a href="#cancel" @click.prevent.stop="releaseActive">Cancelar</a>
-      </template>
-    </footer>
   </article>
 </template>
 
@@ -51,11 +53,13 @@
 import chroma from 'chroma-js';
 import axios from 'axios';
 import LanguageField from './LanguageField';
+import RequirementField from './RequirementField';
 import { pagesPDFView } from '@/views';
 
 export default {
   components: {
-    LanguageField
+    LanguageField,
+    RequirementField
   },
   props: {
     open: {
@@ -66,10 +70,12 @@ export default {
       type: Object
     }
   },
+
   computed: {
     reviewed() {
       return this.article.reviewed === true;
     },
+    articleDataForField(field, extraData) {},
     art() {
       return {
         ...this.article,
@@ -106,6 +112,7 @@ export default {
           name: 'titlePresence',
           title: 'Título presente no PDF?',
           component: 'b-checkbox',
+          extraData: ['title'],
           view: 'language'
         },
         {
@@ -123,7 +130,7 @@ export default {
         {
           name: 'lang',
           title: 'Linguagem do artigo',
-          component: 'LanguageField',
+          component: 'b-select',
           view: 'languageArticle'
         },
         {
@@ -149,6 +156,9 @@ export default {
     };
   },
   methods: {
+    summaryFor(value) {
+      return typeof value === 'boolean' ? (value ? 'Sim' : 'Não') : value;
+    },
     setActive() {
       this.$emit('setActive', [this.article, this.$el.getAttribute('id')]);
       this.changeView('language');
@@ -174,6 +184,12 @@ export default {
         }
       }
     },
+    fieldSaved(fieldName) {
+      const newRequirements = this.article.requirements;
+      newRequirements[fieldName].reviewedOn = new Date().toISOString();
+      this.$set(this.article, 'requirements', newRequirements);
+      this.save();
+    },
     save() {
       axios
         .post(`http://localhost:5000/api/article/${this.article.id}`, {
@@ -181,7 +197,6 @@ export default {
           reviewed: true
         })
         .then(() => {
-          this.$set(this.article, 'reviewed', true);
           this.$emit('save');
         });
     }
@@ -198,6 +213,22 @@ export default {
           color = colorScale(score / 100);
         }
         el.querySelector('span').setAttribute('style', `color: ${color}`);
+      }
+    },
+    reviewedStyle: {
+      bind(el, { value }) {
+        if (value.reviewedOn) {
+          el.classList.add('reviewed');
+        } else {
+          el.classList.remove('reviewed');
+        }
+      },
+      componentUpdated(el, { value }) {
+        if (value.reviewedOn) {
+          el.classList.add('reviewed');
+        } else {
+          el.classList.remove('reviewed');
+        }
       }
     }
   }
@@ -259,6 +290,10 @@ footer {
 
 div.fields {
   margin: 50px 0 10px;
+}
+
+.reviewed {
+  color: green;
 }
 </style>
 
