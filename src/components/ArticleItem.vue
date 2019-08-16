@@ -75,7 +75,10 @@ export default {
     art() {
       return {
         ...this.article,
-        pdfURL: this.article.pdfURL.replace('http://localhost:8888/', '/')
+        data: {
+          ...this.article.data,
+          pdfURL: 'http://localhost:5000' + this.article.data.pdfURL
+        }
       };
     },
     fieldsForRequirements() {
