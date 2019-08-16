@@ -3,6 +3,7 @@
     <template slot="label">
       <div class="Label">
         {{label}}
+        <b-button size="is-small" @click="onInfo" icon-left="feature-search"></b-button>
         <a
           v-for="langCode in mostUsedLangCodes"
           :key="langCode"
@@ -11,7 +12,7 @@
         >{{langCode}}</a>
         <a
           :class="{'LangLink': true,  'active': unusualLangcode }"
-          @click.prevent="() => languagesComboVisible = true"
+          @click.prevent="() => userManualSelection = true"
         >+</a>
       </div>
     </template>
@@ -38,11 +39,14 @@ export default {
       return !this.mostUsedLangCodes.find(item => item === this.$attrs.value);
     },
     languagesComboVisible() {
-      return this.unusualLangcode || !this.$attrs.value;
+      return (
+        this.userManualSelection || this.unusualLangcode || !this.$attrs.value
+      );
     }
   },
   data() {
     return {
+      userManualSelection: false,
       mostUsedLangCodes: ['en', 'ca', 'es', 'pt']
     };
   },
@@ -50,6 +54,9 @@ export default {
   methods: {
     languageName(langCode) {
       return langCode ? ISO6391.getNativeName(langCode) : 'N/D';
+    },
+    onInfo() {
+      this.$emit('info');
     }
   },
   props: {
@@ -80,5 +87,6 @@ export default {
 
 .LangLink.active {
   font-weight: bold;
+  color: #f00 !important;
 }
 </style>
