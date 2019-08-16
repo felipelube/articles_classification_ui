@@ -1,42 +1,39 @@
 <template>
   <article
-    :id="`article-${article.id}`"
+    :id="`article-${art.id}`"
     @click="setActive"
     :class="{'is-active': open, 'is-reviewed': reviewed}"
   >
     <header>
       <p class="Article__HeaderField">
         texto:
-        <span>{{article.lang}}</span>
+        <span>{{art.lang}}</span>
       </p>
       <p class="Article__HeaderField">
         abstract:
-        <span>{{article.abstract_lang}}</span>
+        <span>{{art.abstract_lang}}</span>
       </p>
-      <p v-score-color-scale="article.score" class="Article__HeaderField">
+      <p v-score-color-scale="art.score" class="Article__HeaderField">
         nota:
-        <span>{{article.score}}</span>
+        <span>{{art.score}}</span>
       </p>
     </header>
     <section>
-      <h1>{{article.title}}</h1>
+      <h1>{{art.title}}</h1>
       <template v-if="open">
         <div class="fields">
           <b-field>
             <LanguageField
-              @focus="changeView('language')"
-              v-model="article.lang"
+              @info="changeView('languageArticle')"
+              v-model="art.lang"
               placeholder="Idioma"
               label="Idioma do artigo"
               icon="earth"
             />
           </b-field>
           <b-field v-for="field in fieldsForRequirements" :key="field.name">
-            <b-button size="is-medium" @click="changeView(field.view)" icon-left="feature-search"></b-button>
-            <component
-              :is="field.component"
-              v-model="article.requirements[field.name]"
-            >{{field.title}}</component>
+            <b-button size="is-small" @click="changeView(field.view)" icon-left="feature-search"></b-button>
+            <component :is="field.component" v-model="art.requirements[field.name]">{{field.title}}</component>
           </b-field>
         </div>
       </template>
@@ -168,7 +165,7 @@ export default {
       switch (name) {
         case 'language': {
           return pagesPDFView(this.art.data.pdfURL, 1, 2);
-            }
+        }
         case 'languageArticle': {
           return pagesPDFView(this.art.data.pdfURL, 2, 3);
         }
