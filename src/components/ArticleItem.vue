@@ -54,6 +54,7 @@
 import chroma from 'chroma-js';
 import axios from 'axios';
 import LanguageField from './LanguageField';
+import { pagesPDFView } from '@/views';
 
 export default {
   components: {
@@ -111,19 +112,22 @@ export default {
           view: 'language'
         },
         {
-          name: 'lang',
-          title: 'Linguagem do artigo',
-          component: 'LanguageField'
-        },
-        {
           name: 'abstractLangEnglish',
           title: 'Abstract em inglês?',
-          component: 'b-checkbox'
+          component: 'b-checkbox',
+          view: 'language'
         },
         {
           name: 'abstractPresence',
           title: 'Abstract presente no PDF?',
-          component: 'b-checkbox'
+          component: 'b-checkbox',
+          view: 'language'
+        },
+        {
+          name: 'lang',
+          title: 'Linguagem do artigo',
+          component: 'LanguageField',
+          view: 'languageArticle'
         },
         {
           name: 'referencesInRomanScript',
@@ -163,34 +167,15 @@ export default {
       let selectedView;
       switch (name) {
         case 'language': {
-          selectedView = {
-            name: 'language',
-            components: {
-              left: {
-                name: 'pdf',
-                attrs: {
-                  src: this.article.data.pdfURL,
-                  page: 1,
-                  style: 'display: inline-block; width: 100%;'
-                }
-              },
-              right: {
-                name: 'pdf',
-                attrs: {
-                  src: this.article.data.pdfURL,
-                  page: 5,
-                  style: 'display: inline-block; width: 100%;'
-                }
-              }
+          return pagesPDFView(this.art.data.pdfURL, 1, 2);
             }
-          };
-          break;
+        case 'languageArticle': {
+          return pagesPDFView(this.art.data.pdfURL, 2, 3);
         }
         default: {
           return '';
         }
       }
-      return selectedView;
     },
     save() {
       axios
