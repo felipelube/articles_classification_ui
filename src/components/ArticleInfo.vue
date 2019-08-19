@@ -7,8 +7,8 @@
     <section class="requirements">
       <b-field v-for="field in fieldsForRequirementsInArticle" :key="field.name">
         <component
-          @input="hasChanges"
-          @change="hasChanges"
+          @input="(e) => hasChanges(field.name, e)"
+          @change="(e) => hasChanges(field.name, e)"
           :is="componentForField(field.name)"
           v-model="temporaryFieldValues[field.name].value"
         >{{field.title}}</component>
@@ -48,7 +48,37 @@ export default {
     },
     save() {
       // emita um evento com a cópia dos requisitos alterados para este artigo
-      this.$emit('save', this.temporaryFieldValues);
+
+      const emptyKeys = Object.keys(this.temporaryFieldValues).filter(key => {
+        if (Array.isArray(this.temporaryFieldValues[key])) {
+          return this.temporaryFieldValues[key].some(
+            item => item.reviewedOn === null
+          );
+        }
+        return this.temporaryFieldValues[key].reviewedOn === null;
+      });
+
+      if (emptyKeys.length) {
+        if (window.confirm('Confirma o valor de todos os campos?')) {
+          for (const key of emptyKeys) {
+            if (Array.isArray(this.temporaryFieldValues[key])) {
+              this.temporaryFieldValues[key] = this.temporaryFieldValues[
+                key
+              ].map(item => ({
+                ...item,
+                reviewedOn: new Date().toISOString()
+              }));
+              continue;
+            }
+            this.temporaryFieldValues[
+              key
+            ].reviewedOn = new Date().toISOString();
+          }
+          this.$emit('save', this.temporaryFieldValues);
+        }
+      } else {
+        this.$emit('save', this.temporaryFieldValues);
+      }
     },
     reset() {
       // redefina os requisitos com base nos que estão no artigo inalterado
@@ -60,7 +90,10 @@ export default {
       this.reset();
       this.$emit('cancel');
     },
-    hasChanges() {
+    hasChanges(fieldName, e) {
+      this.temporaryFieldValues[
+        fieldName
+      ].reviewedOn = new Date().toISOString();
       // indique que o usuário mexeu em algum input
       this.$emit('hasChanges');
     }
