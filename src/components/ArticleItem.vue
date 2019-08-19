@@ -39,7 +39,8 @@
             <b-field>
               <component
                 :is="field.component"
-                v-model="art.requirements[field.name].value"
+                :value="art.requirements[field.name].value"
+                @input="(value) => fieldValueChanged(field.name, value)"
               >{{field.title}}</component>
             </b-field>
           </RequirementField>
@@ -55,6 +56,7 @@ import axios from 'axios';
 import LanguageField from './LanguageField';
 import RequirementField from './RequirementField';
 import { pagesPDFView } from '@/views';
+import { setValue } from '../utils';
 
 export default {
   components: {
@@ -101,6 +103,7 @@ export default {
   data() {
     return {
       activeView: '',
+      fieldsValues: {},
       fieldsInfo: [
         {
           name: 'titleLangEnglish',
@@ -184,8 +187,19 @@ export default {
         }
       }
     },
+    fieldValueChanged(fieldName, value) {
+      const currentFieldValue = { ...this.article.requirements[fieldName] };
+      this.$set(
+        this.fieldsValues,
+        fieldName,
+        setValue(currentFieldValue, value)
+      );
+    },
     fieldSaved(fieldName) {
-      const newRequirements = this.article.requirements;
+      const newRequirements = {
+        ...this.article.requirements,
+        ...this.fieldsValues
+      };
       newRequirements[fieldName].reviewedOn = new Date().toISOString();
       this.$set(this.article, 'requirements', newRequirements);
       this.save();
@@ -193,8 +207,7 @@ export default {
     save() {
       axios
         .post(`http://localhost:5000/api/article/${this.article.id}`, {
-          ...this.article,
-          reviewed: true
+          ...this.article
         })
         .then(() => {
           this.$emit('save');
