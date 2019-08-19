@@ -1,7 +1,11 @@
 <template>
   <div id="app">
     <aside class="ArticleList">
-      <ArticleInfo :article="activeArticle" />
+      <header>
+        <b-button size="is-small" icon-left="arrow-left" @click="previousArticle"></b-button>
+        <b-button size="is-small" icon-left="arrow-right" @click="nextArticle"></b-button>
+      </header>
+      <ArticleInfo v-if="activeArticle" :article="activeArticle" />
     </aside>
     <main>
       <div class="pdf-viewer-wrapper">
@@ -39,24 +43,32 @@ export default {
   data() {
     return {
       articles: [],
-      activeArticle: null,
+      activeArticleIndex: 0,
       activeView: null
     };
   },
   methods: {
     setScore,
-    setReviewed
-  },
-  watch: {
-    sortedArticles(value) {
-      /** Se temos uma lista classificada de artigos e nenhum artigo está selecionado, selecione o
-      primeiro da lista */
-      if (this.activeArticle === null && Array.isArray(value)) {
-        this.activeArticle = value[0];
+    setReviewed,
+    previousArticle() {
+      if (this.activeArticleIndex - 1 < 0) {
+        this.activeArticleIndex = 0;
+        return;
       }
+      this.activeArticleIndex = this.activeArticleIndex - 1;
+    },
+    nextArticle() {
+      if (this.activeArticleIndex + 1 === this.sortedArticles.length) {
+        this.activeArticleIndex = this.sortedArticles.length - 1;
+        return;
+      }
+      this.activeArticleIndex = this.activeArticleIndex + 1;
     }
   },
   computed: {
+    activeArticle() {
+      return this.sortedArticles[this.activeArticleIndex] || null;
+    },
     activeArticlePDFURL() {
       return this.activeArticle
         ? API_SERVER + this.activeArticle.data.pdfURL
