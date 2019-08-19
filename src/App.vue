@@ -51,6 +51,7 @@
 import ArticleItem from './components/ArticleItem.vue';
 import virtualList from 'vue-virtual-scroll-list';
 import pdf from 'vue-pdf';
+import { getValue } from './utils';
 
 import axios from 'axios';
 
@@ -83,14 +84,57 @@ export default {
     },
     changeView(view) {
       this.activeView = view;
+    },
+    setScore(article) {
+      let score = 100;
+      const _setScore = (actual, value) => {
+        return actual + value > 100
+          ? 100
+          : actual + value < 0
+          ? 0
+          : actual + value;
+      };
+
+      if (!getValue(article.lang)) {
+        score = _setScore(score, -10);
+      }
+
+      score = Object.keys(article.requirements).reduce(
+        (actualScore, requirement) => {
+          if (!getValue(article.requirements[requirement])) {
+            actualScore = _setScore(actualScore, -10);
+          }
+          return actualScore;
+        },
+        score
+      );
+      article.score = score;
+      return article;
+    },
+    setReviewed(article) {
+      const isReviewed = requirement => {
+        return requirement.reviewedOn && requirement.reviewedOn !== null;
+      };
+
+      article.reviewed =
+        Object.keys(article.requirements).every(requirement => {
+          if (Array.isArray(article.requirements[requirement])) {
+            return article.requirements[requirement].every(isReviewed);
+          }
+          return isReviewed(article.requirements[requirement]);
+        }) && getValue(article.lang);
+      return article;
     }
   },
+
   computed: {
     currentArticlePDF() {
       return this.activeArticle ? this.activeArticle.pdf_url : '';
     },
     articles() {
       return Array.from(this.arts)
+        .map(this.setScore)
+        .map(this.setReviewed)
         .sort((a, b) => b.reviewed - a.reviewed || b.score - a.score)
         .reverse();
     }
