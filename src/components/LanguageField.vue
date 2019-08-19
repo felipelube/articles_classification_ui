@@ -3,7 +3,6 @@
     <template slot="label">
       <div class="Label">
         {{label}}
-        <b-button size="is-small" @click="onInfo" icon-left="feature-search"></b-button>
         <a
           v-for="langCode in mostUsedLangCodes"
           :key="langCode"
@@ -16,13 +15,7 @@
         >+</a>
       </div>
     </template>
-    <b-select
-      v-on:change="$emit('change', $event.target.value)"
-      v-show="languagesComboVisible"
-      @focus="changeView('language')"
-      v-bind="$attrs"
-      v-on="$listeners"
-    >
+    <b-select v-on:change="$emit('change', $event.target.value)" v-bind="$attrs" v-on="$listeners">
       <option :value="lang" v-for="lang in langCodes" :key="lang">{{languageName(lang)}}</option>
     </b-select>
   </b-field>
@@ -37,16 +30,10 @@ export default {
     },
     unusualLangcode() {
       return !this.mostUsedLangCodes.find(item => item === this.$attrs.value);
-    },
-    languagesComboVisible() {
-      return (
-        this.userManualSelection || this.unusualLangcode || !this.$attrs.value
-      );
     }
   },
   data() {
     return {
-      userManualSelection: false,
       mostUsedLangCodes: ['en', 'ca', 'es', 'pt']
     };
   },
@@ -54,9 +41,6 @@ export default {
   methods: {
     languageName(langCode) {
       return langCode ? ISO6391.getNativeName(langCode) : 'N/D';
-    },
-    onInfo() {
-      this.$emit('info');
     }
   },
   props: {
