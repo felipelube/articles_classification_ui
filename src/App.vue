@@ -1,11 +1,17 @@
 <template>
   <div id="app">
-    <aside class="ArticleList">
+    <aside>
       <header>
         <b-button size="is-small" icon-left="arrow-left" @click="previousArticle"></b-button>
         <b-button size="is-small" icon-left="arrow-right" @click="nextArticle"></b-button>
       </header>
-      <ArticleInfo v-if="activeArticle" :article="activeArticle" />
+      <ArticleInfo
+        @hasChanges="() => this.activeChanges = true"
+        @cancel="() => this.activeChanges = false"
+        @save="saveArticle"
+        v-if="activeArticle"
+        :article="activeArticle"
+      />
     </aside>
     <main>
       <div class="pdf-viewer-wrapper">
@@ -30,7 +36,11 @@
 import pdf from 'vue-pdf';
 import { setScore, setReviewed } from './utils';
 import ArticleInfo from './components/ArticleInfo';
-import { API_SERVER, API_ENDPOINT_ARTICLES } from './config';
+import {
+  API_SERVER,
+  API_ENDPOINT_ARTICLES,
+  API_ENDPOINT_ARTICLE
+} from './config';
 
 import axios from 'axios';
 
@@ -44,12 +54,28 @@ export default {
     return {
       articles: [],
       activeArticleIndex: 0,
-      activeView: null
+      activeView: null,
+      activeChanges: false
     };
   },
   methods: {
     setScore,
     setReviewed,
+    saveArticle(newRequirements) {
+      axios
+        .post(API_SERVER + API_ENDPOINT_ARTICLE + this.activeArticle.id, {
+          ...this.activeArticle,
+          requirements: newRequirements
+        })
+        .then(() => {
+          this.fetchArticles(); //Force a atualização de todos os artigos dando um fetch na API
+        });
+    },
+    fetchArticles() {
+      axios
+        .get(API_SERVER + API_ENDPOINT_ARTICLES)
+        .then(response => (this.articles = response.data));
+    },
     previousArticle() {
       if (this.activeArticleIndex - 1 < 0) {
         this.activeArticleIndex = 0;
@@ -87,9 +113,7 @@ export default {
     }
   },
   created() {
-    axios
-      .get(API_SERVER + API_ENDPOINT_ARTICLES)
-      .then(response => (this.articles = response.data));
+    this.fetchArticles();
   }
 };
 </script>
