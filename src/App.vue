@@ -14,6 +14,12 @@
         v-if="activeArticle"
         :article="activeArticle"
       />
+      <footer>
+        <div class="navigation-buttons">
+          <b-button size="is-small" icon-left="arrow-left" @click="previousArticle"></b-button>
+          <b-button size="is-small" icon-left="arrow-right" @click="nextArticle"></b-button>
+        </div>
+      </footer>
     </aside>
     <main v-if="activeArticlePDFURL">
       <pdf
@@ -142,7 +148,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 #app {
   display: flex;
 }
@@ -151,7 +157,10 @@ aside {
   width: 350px;
   position: fixed;
   z-index: 1000;
-  margin: 16px;
+  margin: 0 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 main {

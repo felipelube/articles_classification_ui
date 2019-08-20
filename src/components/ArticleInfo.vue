@@ -1,8 +1,8 @@
 <template>
-  <section>
+  <section class="ArticleInfo">
     <header>
       <h2>{{article.data.title}}</h2>
-      <h2>{{article.data.originalTitle}}</h2>
+      <h3>{{article.data.originalTitle}}</h3>
     </header>
     <section class="requirements">
       <b-field v-for="field in fieldsForRequirementsInArticle" :key="field.name">
@@ -129,4 +129,28 @@ export default {
 </script>
 
 <style scoped>
+.ArticleInfo {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.ArticleInfo > footer {
+}
+
+.ArticleInfo > .requirements {
+  margin-top: auto;
+}
+h2,
+h3 {
+  text-align: center;
+  margin: 10px;
+  font-weight: bold;
+  font-size: 20px;
+}
+
+h3 {
+  font-size: 18px;
+  color: #686868;
+}
 </style>
