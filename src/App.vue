@@ -15,21 +15,14 @@
         :article="activeArticle"
       />
     </aside>
-    <main>
-      <div class="pdf-viewer-wrapper">
-        <component
-          v-if="activeView && activeView.components && activeView.components.left"
-          :is="activeView.components.left.name"
-          v-bind="activeView.components.left.attrs"
-        />
-      </div>
-      <div class="pdf-viewer-wrapper">
-        <component
-          v-if="activeView && activeView.components && activeView.components.right"
-          :is="activeView.components.right.name"
-          v-bind="activeView.components.right.attrs"
-        />
-      </div>
+    <main v-if="activeArticlePDFURL">
+      <pdf
+        v-for="i in pdfNumPages"
+        :key="i"
+        :src="activeArticlePDFURL"
+        :page="i"
+        style="display: inline-block; min-width: calc(50vw - 210px);"
+      ></pdf>
     </main>
   </div>
 </template>
@@ -54,10 +47,12 @@ export default {
   },
   data() {
     return {
+      /** Artigos */
       articles: [],
       activeArticleIndex: 0,
-      activeView: null,
-      activeChanges: false
+      activeChanges: false,
+      /** PDF */
+      pdfNumPages: 0
     };
   },
   methods: {
@@ -129,6 +124,18 @@ export default {
         .reverse();
     }
   },
+  watch: {
+    activeArticlePDFURL: {
+      immediate: true,
+      handler(val) {
+        if (val) {
+          pdf.createLoadingTask(val).then(document => {
+            this.pdfNumPages = document.numPages;
+          });
+        }
+      }
+    }
+  },
   created() {
     this.fetchArticles();
   }
@@ -139,16 +146,18 @@ export default {
 #app {
   display: flex;
 }
-aside.ArticleList {
+aside {
   height: 100vh;
-  display: flex;
-  align-items: center;
-}
-main {
-  display: flex;
-  flex-grow: 1;
+  width: 350px;
+  position: fixed;
+  z-index: 1000;
+  margin: 16px;
 }
 
+main {
+  margin-left: 350px;
+  flex-grow: 1;
+}
 
 .navigation-buttons > button {
   width: 50%;
