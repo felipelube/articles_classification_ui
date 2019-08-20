@@ -16,19 +16,12 @@
       </footer>
     </aside>
     <main v-if="activeArticlePDFURL">
-      <pdf
-        v-for="i in pdfPages"
-        :key="i"
-        :src="activeArticlePDFURL"
-        :page="i"
-        style="display: inline-block; min-width: calc(50vw - 210px);"
-      ></pdf>
+      <iframe id="PDFWrapper" :src="activeArticlePDFURL">Este browser não suporta pdfs.</iframe>
     </main>
   </div>
 </template>
 
 <script>
-import pdf from 'vue-pdf';
 import { setScore, setReviewed } from './utils';
 import ArticleInfo from './components/ArticleInfo';
 import {
@@ -42,7 +35,6 @@ import axios from 'axios';
 export default {
   name: 'app',
   components: {
-    pdf,
     ArticleInfo
   },
   data() {
@@ -50,9 +42,7 @@ export default {
       /** Artigos */
       articles: [],
       activeArticleIndex: 0,
-      activeChanges: false,
-      /** PDF */
-      pdfNumPages: 0
+      activeChanges: false
     };
   },
   methods: {
@@ -104,15 +94,6 @@ export default {
     }
   },
   computed: {
-    pdfPages() {
-      if (this.activeArticle.data.referencesPage && this.numPages) {
-        return this.numPages.filter(
-          pageNum =>
-            pageNum <= 2 || pageNum >= this.activeArticle.data.referencesPage
-        );
-      }
-      return [1, 2];
-    },
     activeArticle() {
       return this.sortedArticles[this.activeArticleIndex] || null;
     },
@@ -133,34 +114,26 @@ export default {
         .reverse();
     }
   },
-  watch: {
-    activeArticlePDFURL: {
-      immediate: true,
-      handler(val) {
-        if (val) {
-          pdf.createLoadingTask(val).then(document => {
-            this.pdfNumPages = document.numPages;
-          });
-        }
-      }
-    }
-  },
   created() {
     this.fetchArticles();
   }
 };
 </script>
 
+
 <style scoped>
 #app {
   display: flex;
+}
+
+#PDFWrapper {
+  flex-grow: 1;
 }
 aside {
   height: 100vh;
   width: 350px;
   position: fixed;
   z-index: 1000;
-  margin: 0 16px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -169,6 +142,9 @@ aside {
 main {
   margin-left: 350px;
   flex-grow: 1;
+  position: relative;
+  display: flex;
+  height: 100vh;
 }
 
 .navigation-buttons > button {

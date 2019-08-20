@@ -16,7 +16,6 @@
     "core-js": "^2.6.5",
     "iso-639-1": "^2.1.0",
     "vue": "^2.6.10",
-    "vue-pdf": "^4.0.7",
     "vue-virtual-scroll-list": "^1.4.1"
   },
   "devDependencies": {
