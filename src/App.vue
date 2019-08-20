@@ -2,8 +2,10 @@
   <div id="app">
     <aside>
       <header>
-        <b-button size="is-small" icon-left="arrow-left" @click="previousArticle"></b-button>
-        <b-button size="is-small" icon-left="arrow-right" @click="nextArticle"></b-button>
+        <div class="navigation-buttons">
+          <b-button size="is-small" icon-left="arrow-left" @click="previousArticle"></b-button>
+          <b-button size="is-small" icon-left="arrow-right" @click="nextArticle"></b-button>
+        </div>
       </header>
       <ArticleInfo
         @hasChanges="() => this.activeChanges = true"
@@ -130,6 +132,13 @@ aside.ArticleList {
 main {
   display: flex;
   flex-grow: 1;
+}
+
+
+.navigation-buttons > button {
+  width: 50%;
+  display: inline-block;
+  height: 44px;
 }
 
 .pdf-viewer-wrapper {
