@@ -1,12 +1,6 @@
 <template>
   <div id="app">
     <aside>
-      <header>
-        <div class="navigation-buttons">
-          <b-button size="is-small" icon-left="arrow-left" @click="previousArticle"></b-button>
-          <b-button size="is-small" icon-left="arrow-right" @click="nextArticle"></b-button>
-        </div>
-      </header>
       <ArticleInfo
         @hasChanges="() => this.activeChanges = true"
         @cancel="() => this.activeChanges = false"
@@ -23,7 +17,7 @@
     </aside>
     <main v-if="activeArticlePDFURL">
       <pdf
-        v-for="i in pdfNumPages"
+        v-for="i in pdfPages"
         :key="i"
         :src="activeArticlePDFURL"
         :page="i"
@@ -110,6 +104,15 @@ export default {
     }
   },
   computed: {
+    pdfPages() {
+      if (this.activeArticle.data.referencesPage && this.numPages) {
+        return this.numPages.filter(
+          pageNum =>
+            pageNum <= 2 || pageNum >= this.activeArticle.data.referencesPage
+        );
+      }
+      return [1, 2];
+    },
     activeArticle() {
       return this.sortedArticles[this.activeArticleIndex] || null;
     },
