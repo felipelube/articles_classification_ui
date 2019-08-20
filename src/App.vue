@@ -79,18 +79,33 @@ export default {
         .then(response => (this.articles = response.data));
     },
     previousArticle() {
-      if (this.activeArticleIndex - 1 < 0) {
-        this.activeArticleIndex = 0;
-        return;
+      if (this.confirmAbadomChanges()) {
+        if (this.activeArticleIndex - 1 < 0) {
+          this.activeArticleIndex = 0;
+          return;
+        }
+        this.activeArticleIndex = this.activeArticleIndex - 1;
       }
-      this.activeArticleIndex = this.activeArticleIndex - 1;
+    },
+    confirmAbadomChanges() {
+      if (this.activeChanges) {
+        if (window.confirm('Mudanças não salvas detectadas, continuar?')) {
+          this.activeChanges = false;
+          return true;
+        }
+        return false;
+      } else {
+        return true;
+      }
     },
     nextArticle() {
-      if (this.activeArticleIndex + 1 === this.sortedArticles.length) {
-        this.activeArticleIndex = this.sortedArticles.length - 1;
-        return;
+      if (this.confirmAbadomChanges()) {
+        if (this.activeArticleIndex + 1 === this.sortedArticles.length) {
+          this.activeArticleIndex = this.sortedArticles.length - 1;
+          return;
+        }
+        this.activeArticleIndex = this.activeArticleIndex + 1;
       }
-      this.activeArticleIndex = this.activeArticleIndex + 1;
     }
   },
   computed: {
