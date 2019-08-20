@@ -12,7 +12,11 @@ export const setValue = (field, value, source = null) => {
 }
 
 export const getValue = (field) => {
-  return field.value
+  try{
+    return field.value
+  } catch {
+    return null
+  }
 }
 
 export const setScore = (article) => {
