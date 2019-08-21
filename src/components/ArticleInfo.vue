@@ -26,6 +26,8 @@ import { REQUIREMENT_FIELDS_INFO } from '../config';
 import LanguageField from './LanguageField';
 import hotkeys from 'hotkeys-js';
 
+const SHORTCUT_KEYS = ['u', 'i', 'o', 'p', 'j', 'k', 'l', 'ç'];
+
 export default {
   name: 'ArticleInfo',
   components: {
@@ -44,6 +46,23 @@ export default {
     };
   },
   methods: {
+    setKeyboardShortcuts() {
+      hotkeys('ctrl+enter', this.save);
+      if (Object.keys(this.temporaryFieldValues).length) {
+        SHORTCUT_KEYS.forEach((key, index) => {
+          const keyName = this.fieldsForRequirementsInArticle[index].name;
+          hotkeys('shift+' + key, () => {
+            this.setFieldAsReviewed(keyName);
+          });
+        });
+      }
+    },
+    unsetKeyboardShortcuts() {
+      hotkeys.unbind('ctrl+enter');
+      for (let key of SHORTCUT_KEYS) {
+        hotkeys.unbind('shift+' + key);
+      }
+    },
     componentForField(fieldName) {
       return this.fieldsInfo.find(fieldInfo => fieldInfo.name === fieldName)
         .component;
@@ -128,10 +147,16 @@ export default {
     }
   },
   mounted() {
-    hotkeys('ctrl+enter', this.save);
+    this.setKeyboardShortcuts();
+  },
+  beforeUpdate() {
+    this.unsetKeyboardShortcuts();
+  },
+  updated() {
+    this.setKeyboardShortcuts();
   },
   beforeDestroy() {
-    hotkeys.unbind('ctrl+enter');
+    this.unsetKeyboardShortcuts();
   }
 };
 </script>
