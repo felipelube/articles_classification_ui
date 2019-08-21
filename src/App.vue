@@ -22,7 +22,7 @@
 </template>
 
 <script>
-import { setScore, setReviewed } from './utils';
+import { setScore, setReviewed, inValidSection } from './utils';
 import ArticleInfo from './components/ArticleInfo';
 import hotkeys from 'hotkeys-js';
 import {
@@ -49,6 +49,7 @@ export default {
   methods: {
     setScore,
     setReviewed,
+    inValidSection,
     saveArticle(newRequirements) {
       axios
         .post(API_SERVER + API_ENDPOINT_ARTICLE + this.activeArticle.id, {
@@ -105,10 +106,12 @@ export default {
     },
     sortedArticles() {
       /**
-       * Retorne uma lista com os artigos classificados pela pontuação e status de análise.
+       * Retorne uma lista com os artigos válidos (na seção correta), classificados pela pontuação
+       * e status de análise.
        * As piores pontuações e artigos sem análise vêm primeiro.
        */
       return Array.from(this.articles)
+        .filter(this.inValidSection)
         .map(this.setScore)
         .map(this.setReviewed)
         .sort((a, b) => b.reviewed - a.reviewed || b.score - a.score)

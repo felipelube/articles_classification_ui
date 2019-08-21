@@ -1,3 +1,5 @@
+import { INVALID_ARTICLE_SECTIONS } from '../config/'
+
 export const setValue = (field, value, source = null) => {
   field.value = value;
   field.reviewedOn = new Date().toISOString();
@@ -59,4 +61,8 @@ export const setReviewed = (article) => {
       return isReviewed(article.requirements[requirement]);
     }) && getValue(article.lang);
   return article;
+}
+
+export const inValidSection = (article) => {
+  return !INVALID_ARTICLE_SECTIONS.find((section) => article.data.section === section)
 }
