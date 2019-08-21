@@ -7,8 +7,8 @@
     <section class="requirements">
       <b-field v-for="field in fieldsForRequirementsInArticle" :key="field.name">
         <component
-          @input="(e) => hasChanges(field.name, e)"
-          @change="(e) => hasChanges(field.name, e)"
+          @input="() => setFieldAsReviewed(field.name)"
+          @change="() => setFieldAsReviewed(field.name)"
           :is="componentForField(field.name)"
           v-model="temporaryFieldValues[field.name].value"
         >{{field.title}}</component>
@@ -92,7 +92,7 @@ export default {
       this.reset();
       this.$emit('cancel');
     },
-    hasChanges(fieldName, e) {
+    setFieldAsReviewed(fieldName) {
       this.temporaryFieldValues[
         fieldName
       ].reviewedOn = new Date().toISOString();
