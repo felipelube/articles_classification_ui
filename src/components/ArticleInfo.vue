@@ -5,7 +5,11 @@
       <h3>{{article.data.originalTitle}}</h3>
     </header>
     <section class="requirements">
-      <b-field v-for="field in fieldsForRequirementsInArticle" :key="field.name">
+      <b-field
+        v-reviewed-style="field"
+        v-for="field in fieldsForRequirementsInArticle"
+        :key="field.name"
+      >
         <component
           @input="() => setFieldAsReviewed(field.name)"
           @change="() => setFieldAsReviewed(field.name)"
@@ -136,6 +140,34 @@ export default {
       }, []);
     }
   },
+  directives: {
+    reviewedStyle: {
+      bind(el, { value }, vnode) {
+        const requirement = vnode.context.temporaryFieldValues[value.name];
+        if (requirement.reviewedOn) {
+          el.classList.add('reviewed');
+        } else {
+          el.classList.remove('reviewed');
+        }
+      },
+      componentUpdated(el, { value }, vnode) {
+        const requirement = vnode.context.temporaryFieldValues[value.name];
+        if (requirement.reviewedOn) {
+          el.classList.add('reviewed');
+        } else {
+          el.classList.remove('reviewed');
+        }
+      },
+      update(el, { value }, vnode) {
+        const requirement = vnode.context.temporaryFieldValues[value.name];
+        if (requirement.reviewedOn) {
+          el.classList.add('reviewed');
+        } else {
+          el.classList.remove('reviewed');
+        }
+      }
+    }
+  },
   watch: {
     article: {
       deep: true,
@@ -185,5 +217,9 @@ h3 {
 h3 {
   font-size: 18px;
   color: #686868;
+}
+.field.reviewed {
+  color: green;
+  font-weight: bold;
 }
 </style>
