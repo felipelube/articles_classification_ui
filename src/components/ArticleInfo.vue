@@ -24,6 +24,8 @@
 <script>
 import { REQUIREMENT_FIELDS_INFO } from '../config';
 import LanguageField from './LanguageField';
+import hotkeys from 'hotkeys-js';
+
 export default {
   name: 'ArticleInfo',
   components: {
@@ -124,6 +126,12 @@ export default {
         this.reset();
       }
     }
+  },
+  mounted() {
+    hotkeys('ctrl+enter', this.save);
+  },
+  beforeDestroy() {
+    hotkeys.unbind('ctrl+enter');
   }
 };
 </script>

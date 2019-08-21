@@ -24,6 +24,7 @@
 <script>
 import { setScore, setReviewed } from './utils';
 import ArticleInfo from './components/ArticleInfo';
+import hotkeys from 'hotkeys-js';
 import {
   API_SERVER,
   API_ENDPOINT_ARTICLES,
@@ -116,6 +117,14 @@ export default {
   },
   created() {
     this.fetchArticles();
+  },
+  mounted() {
+    hotkeys('right', this.nextArticle);
+    hotkeys('left', this.previousArticle);
+  },
+  beforeDestroy() {
+    hotkeys.unbind('right');
+    hotkeys.unbind('left');
   }
 };
 </script>
