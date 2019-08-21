@@ -15,7 +15,7 @@
       </b-field>
     </section>
     <footer class="card-footer">
-      <a @click="save" class="card-footer-item">Save</a>
+      <a @click="save" class="card-footer-item">Salvar</a>
       <a @click="cancel" class="card-footer-item">Cancelar</a>
     </footer>
   </section>
