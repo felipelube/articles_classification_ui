@@ -10,8 +10,12 @@
       />
       <footer>
         <div class="navigation-buttons">
-          <b-button size="is-small" icon-left="arrow-left" @click="previousArticle"></b-button>
-          <b-button size="is-small" icon-left="arrow-right" @click="nextArticle"></b-button>
+          <router-link class="buttom" :to="previousArticleRoute">
+            <b-icon icon="arrow-left" size="is-medium"></b-icon>
+          </router-link>
+          <router-link class="buttom" :to="nextArticleRoute">
+            <b-icon icon="arrow-right" size="is-medium"></b-icon>
+          </router-link>
         </div>
       </footer>
     </aside>
@@ -42,7 +46,6 @@ export default {
     return {
       /** Artigos */
       articles: [],
-      activeArticleIndex: 0,
       activeChanges: false
     };
   },
@@ -84,11 +87,7 @@ export default {
     },
     previousArticle() {
       if (this.confirmAbadomChanges()) {
-        if (this.activeArticleIndex - 1 < 0) {
-          this.activeArticleIndex = 0;
-          return;
-        }
-        this.activeArticleIndex = this.activeArticleIndex - 1;
+        this.$router.push(this.previousArticleRoute);
       }
     },
     confirmAbadomChanges() {
@@ -104,17 +103,53 @@ export default {
     },
     nextArticle() {
       if (this.confirmAbadomChanges()) {
-        if (this.activeArticleIndex + 1 === this.sortedArticles.length) {
-          this.activeArticleIndex = this.sortedArticles.length - 1;
-          return;
-        }
-        this.activeArticleIndex = this.activeArticleIndex + 1;
+        this.$router.push(this.nextArticleRoute);
       }
     }
   },
   computed: {
+    activeArticleIndex() {
+      return this.articles.findIndex(
+        article => this.activeArticle.id === article.id
+      );
+    },
+    nextArticleRoute() {
+      try {
+        const nextArticleId = this.articles[this.activeArticleIndex + 1].id;
+        return {
+          name: 'App',
+          params: {
+            articleId: nextArticleId
+          }
+        };
+      } catch {
+        return null;
+      }
+    },
+    previousArticleRoute() {
+      try {
+        const nextArticleId = this.articles[this.activeArticleIndex - 1].id;
+        return {
+          name: 'App',
+          params: {
+            articleId: nextArticleId
+          }
+        };
+      } catch {
+        return null;
+      }
+    },
     activeArticle() {
-      return this.sortedArticles[this.activeArticleIndex] || null;
+      try {
+        const articleId = parseInt(this.$route.params.articleId);
+        if (articleId) {
+          return this.articles.find(article => article.id === articleId);
+        } else {
+          return this.articles[0];
+        }
+      } catch {
+        return this.articles[0];
+      }
     },
     activeArticlePDFURL() {
       return this.activeArticle
@@ -176,10 +211,11 @@ main {
   height: 100vh;
 }
 
-.navigation-buttons > button {
+.navigation-buttons > a {
   width: 50%;
   display: inline-block;
   height: 44px;
+  text-align: center;
 }
 
 .pdf-viewer-wrapper {
