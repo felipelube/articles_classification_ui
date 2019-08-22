@@ -112,6 +112,21 @@ export default {
       this.temporaryFieldValues = JSON.parse(
         JSON.stringify(this.article.requirements)
       );
+
+      for (let requirementName in this.temporaryFieldValues) {
+        const requirement = this.temporaryFieldValues[requirementName];
+        const requirementFieldInfo = REQUIREMENT_FIELDS_INFO.find(
+          field => field.name === requirementName
+        );
+
+        if (
+          requirementFieldInfo &&
+          requirementFieldInfo.type === 'boolean' &&
+          (requirement.value === '' || requirement.value === null)
+        ) {
+          requirement.value = true;
+        }
+      }
     },
     cancel() {
       this.reset();
