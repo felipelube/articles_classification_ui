@@ -3,6 +3,8 @@
     <header>
       <h2>{{article.data.title}}</h2>
       <h3>{{article.data.originalTitle}}</h3>
+      <p class="a">{{article.data.abstract}}</p>
+      <p class="a">Autores: {{article.data.authors.join(", ")}}</p>
     </header>
     <section class="requirements">
       <b-field
