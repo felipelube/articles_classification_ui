@@ -3,8 +3,8 @@
     <header>
       <h2>{{article.data.title}}</h2>
       <h3>{{article.data.originalTitle}}</h3>
-      <p class="a">{{article.data.abstract}}</p>
       <p class="a">Autores: {{article.data.authors.join(", ")}}</p>
+      <p class="a">{{abstract}}</p>
     </header>
     <section class="requirements">
       <b-field
@@ -32,6 +32,7 @@
 import { REQUIREMENT_FIELDS_INFO } from '../config';
 import LanguageField from './LanguageField';
 import hotkeys from 'hotkeys-js';
+import smartTruncate from 'smart-truncate';
 
 const SHORTCUT_KEYS = ['u', 'i', 'o', 'p', 'j', 'k', 'l', 'ç'];
 
@@ -140,6 +141,9 @@ export default {
     }
   },
   computed: {
+    abstract() {
+      return smartTruncate(this.article.data.abstract, 250);
+    },
     fieldsForRequirementsInArticle() {
       /**
        * Retorna uma array com os campos para os requerimentos presentes no artigo.
@@ -210,6 +214,9 @@ export default {
 </script>
 
 <style scoped>
+header > p {
+  font-size: 14px;
+}
 .ArticleInfo {
   display: flex;
   flex-direction: column;
