@@ -68,7 +68,7 @@ export default {
 
       if (Object.keys(newRequirements).length) {
         return axios
-          .post(API_SERVER + API_ENDPOINT_ARTICLE + this.activeArticle.id, {
+          .put(API_SERVER + API_ENDPOINT_ARTICLE + this.activeArticle.id, {
             ...this.activeArticle,
             requirements: newRequirements
           })
