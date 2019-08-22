@@ -21,6 +21,7 @@
       </b-field>
     </section>
     <footer class="card-footer">
+      <b-checkbox v-model="markAllAsReviewed">Marcar todos campos como revisados</b-checkbox>
       <a @click="save" class="card-footer-item">Salvar</a>
       <a @click="cancel" class="card-footer-item">Cancelar</a>
     </footer>
@@ -48,7 +49,8 @@ export default {
   data: function() {
     return {
       fieldsInfo: REQUIREMENT_FIELDS_INFO, // dicionário com informações sobre os campos
-      temporaryFieldValues: {} // cópia de trabalho de article.requirements
+      temporaryFieldValues: {}, // cópia de trabalho de article.requirements
+      markAllAsReviewed: true
     };
   },
   methods: {
@@ -85,30 +87,27 @@ export default {
         return this.temporaryFieldValues[key].reviewedOn === null;
       });
 
-      if (emptyKeys.length) {
-        if (window.confirm('Confirma o valor de todos os campos?')) {
-          for (const key of emptyKeys) {
-            if (Array.isArray(this.temporaryFieldValues[key])) {
-              this.temporaryFieldValues[key] = this.temporaryFieldValues[
-                key
-              ].map(item => ({
+      if (emptyKeys.length && this.markAllAsReviewed) {
+        for (const key of emptyKeys) {
+          if (Array.isArray(this.temporaryFieldValues[key])) {
+            this.temporaryFieldValues[key] = this.temporaryFieldValues[key].map(
+              item => ({
                 ...item,
                 reviewedOn: new Date().toISOString()
-              }));
-              continue;
-            }
-            this.temporaryFieldValues[
-              key
-            ].reviewedOn = new Date().toISOString();
+              })
+            );
+            continue;
           }
-          this.$emit('save', this.temporaryFieldValues);
+          this.temporaryFieldValues[key].reviewedOn = new Date().toISOString();
         }
+        this.$emit('save', this.temporaryFieldValues);
       } else {
         this.$emit('save', this.temporaryFieldValues);
       }
     },
     reset() {
       // redefina os requisitos com base nos que estão no artigo inalterado
+      this.markAllAsReviewed = true;
       this.temporaryFieldValues = JSON.parse(
         JSON.stringify(this.article.requirements)
       );
