@@ -31,21 +31,6 @@ export const REQUIREMENT_FIELDS_INFO = [
 
   },
   {
-    name: 'lang',
-    title: 'Linguagem do artigo',
-    component: 'LanguageField',
-    
-  },
-  {
-    name: 'referencesInRomanScript',
-    title: 'Todas referências no alfabeto romano?',
-    component: 'b-checkbox'
-  },
-  {
-    name: 'referencesPage',
-    title: 'Página com as referências'
-  },
-  {
     name: 'authorsPresence',
     title: 'Autores presentes no PDF?',
     component: 'b-checkbox'
@@ -54,5 +39,15 @@ export const REQUIREMENT_FIELDS_INFO = [
     name: 'originalTitlePresence',
     title: 'Titulo original presente no PDF?',
     component: 'b-checkbox'
-  }
+  },
+  {
+    name: 'referencesInRomanScript',
+    title: 'Todas referências no alfabeto romano?',
+    component: 'b-checkbox'
+  },
+  {
+    name: 'lang',
+    title: 'Linguagem do artigo',
+    component: 'LanguageField',
+  },
 ]
