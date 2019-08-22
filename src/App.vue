@@ -50,15 +50,32 @@ export default {
     setScore,
     setReviewed,
     inValidSection,
-    saveArticle(newRequirements) {
-      axios
-        .post(API_SERVER + API_ENDPOINT_ARTICLE + this.activeArticle.id, {
-          ...this.activeArticle,
-          requirements: newRequirements
-        })
-        .then(() => {
-          this.fetchArticles(); //Force a atualização de todos os artigos dando um fetch na API
-        });
+    saveArticle(requirements) {
+      const newRequirements = Object.keys(requirements).reduce(
+        (newObj, requirementName) => {
+          const requirement = requirements[requirementName];
+
+          if (requirement.reviewedOn) {
+            newObj[requirementName] = requirement;
+          }
+          return newObj;
+        },
+        {}
+      );
+
+      if (Object.keys(newRequirements).length) {
+        return axios
+          .post(API_SERVER + API_ENDPOINT_ARTICLE + this.activeArticle.id, {
+            ...this.activeArticle,
+            requirements: newRequirements
+          })
+          .then(() => {
+            this.fetchArticles(); //Force a atualização de todos os artigos dando um fetch na API
+          });
+      } else {
+        this.$buefy.notification.open('Pulando para o próximo artigo');
+        this.nextArticle(); // Nenhum campo foi revisado, pulando para o próximo artigo
+      }
     },
     fetchArticles() {
       axios
