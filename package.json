@@ -17,6 +17,7 @@
     "hotkeys-js": "^3.6.14",
     "iso-639-1": "^2.1.0",
     "vue": "^2.6.10",
+    "vue-router": "^3.1.2",
     "vue-virtual-scroll-list": "^1.4.1"
   },
   "devDependencies": {
