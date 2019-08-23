@@ -10,10 +10,10 @@
       />
       <footer>
         <div class="navigation-buttons">
-          <router-link class="buttom" :to="previousArticleRoute">
+          <router-link class="buttom" v-if="previousArticleRoute" :to="previousArticleRoute">
             <b-icon icon="arrow-left" size="is-medium"></b-icon>
           </router-link>
-          <router-link class="buttom" :to="nextArticleRoute">
+          <router-link class="buttom" v-if="nextArticleRoute" :to="nextArticleRoute">
             <b-icon icon="arrow-right" size="is-medium"></b-icon>
           </router-link>
         </div>
@@ -31,7 +31,7 @@ import ArticleInfo from './components/ArticleInfo';
 import hotkeys from 'hotkeys-js';
 import {
   API_SERVER,
-  API_ENDPOINT_ARTICLES,
+  API_ENDPOINT_ARTICLES_IDS,
   API_ENDPOINT_ARTICLE
 } from './config';
 
@@ -45,7 +45,8 @@ export default {
   data() {
     return {
       /** Artigos */
-      articles: [],
+      articlesIds: [],
+      activeArticle: null,
       activeChanges: false
     };
   },
@@ -54,6 +55,10 @@ export default {
     setReviewed,
     inValidSection,
     saveArticle(requirements) {
+      /**
+       * Calcula quais requisitos tem data de análise válida (foram provavelmente alterados) e
+       * envia o artigo atualizado para a API.
+       */
       const newRequirements = Object.keys(requirements).reduce(
         (newObj, requirementName) => {
           const requirement = requirements[requirementName];
@@ -69,21 +74,33 @@ export default {
       if (Object.keys(newRequirements).length) {
         return axios
           .put(API_SERVER + API_ENDPOINT_ARTICLE + this.activeArticle.id, {
-            ...this.activeArticle,
+            ...this.activeArticle, //TODO: apesar de ser um PUT, por que vc enviando o objeto todo?
             requirements: newRequirements
           })
-          .then(() => {
-            this.fetchArticles(); //Force a atualização de todos os artigos dando um fetch na API
+          .then(async () => {
+            await this.fetchArticlesIds(); //Force a atualização de todos os artigos dando outro fetch na API
+            this.$nextTick(() => {
+              // Depois da mudança na lista de ids, retorne ao primeiro artigo dela
+              this.$router.push({
+                name: 'App',
+                params: {
+                  articleId: this.articlesIds[0]
+                }
+              });
+            });
           });
       } else {
         this.$buefy.notification.open('Pulando para o próximo artigo');
         this.nextArticle(); // Nenhum campo foi revisado, pulando para o próximo artigo
       }
     },
-    fetchArticles() {
-      axios
-        .get(API_SERVER + API_ENDPOINT_ARTICLES)
-        .then(response => (this.articles = response.data));
+    /**
+     * Pega uma lista de ids de artigos, usada para navegação
+     */
+    fetchArticlesIds() {
+      return axios
+        .get(API_SERVER + API_ENDPOINT_ARTICLES_IDS)
+        .then(response => (this.articlesIds = response.data));
     },
     previousArticle() {
       if (this.confirmAbadomChanges()) {
@@ -108,70 +125,88 @@ export default {
     }
   },
   computed: {
-    activeArticleIndex() {
-      return this.articles.findIndex(
-        article => this.activeArticle.id === article.id
+    /**
+     * O índice do artigo atual na lista de ids de artigos
+     */
+    currentArticleIndex() {
+      return this.articlesIds.findIndex(
+        articleId => articleId === this.activeArticle.id
       );
     },
+    /**
+     * Rota para o próximo artigo ao atual
+     */
     nextArticleRoute() {
       try {
-        const nextArticleId = this.articles[this.activeArticleIndex + 1].id;
-        return {
-          name: 'App',
-          params: {
-            articleId: nextArticleId
-          }
-        };
+        const nextArticleId = this.articlesIds[this.currentArticleIndex + 1];
+        if (nextArticleId) {
+          return {
+            name: 'App',
+            params: {
+              articleId: nextArticleId
+            }
+          };
+        }
+        return null;
       } catch {
         return null;
       }
     },
+    /**
+     * Rota para o artigo anterior ao atual
+     */
     previousArticleRoute() {
       try {
-        const nextArticleId = this.articles[this.activeArticleIndex - 1].id;
-        return {
-          name: 'App',
-          params: {
-            articleId: nextArticleId
-          }
-        };
+        const previousArticleId = this.articlesIds[
+          this.currentArticleIndex - 1
+        ];
+        if (previousArticleId) {
+          return {
+            name: 'App',
+            params: {
+              articleId: previousArticleId
+            }
+          };
+        }
+        return null;
       } catch {
         return null;
-      }
-    },
-    activeArticle() {
-      try {
-        const articleId = parseInt(this.$route.params.articleId);
-        if (articleId) {
-          return this.articles.find(article => article.id === articleId);
-        } else {
-          return this.articles[0];
-        }
-      } catch {
-        return this.articles[0];
       }
     },
     activeArticlePDFURL() {
       return this.activeArticle
         ? API_SERVER + this.activeArticle.data.pdfURL
         : '';
-    },
-    sortedArticles() {
-      /**
-       * Retorne uma lista com os artigos válidos (na seção correta), classificados pela pontuação
-       * e status de análise.
-       * As piores pontuações e artigos sem análise vêm primeiro.
-       */
-      return Array.from(this.articles)
-        .filter(this.inValidSection)
-        .map(this.setScore)
-        .map(this.setReviewed)
-        .sort((a, b) => b.reviewed - a.reviewed || b.score - a.score)
-        .reverse();
     }
   },
-  created() {
-    this.fetchArticles();
+  watch: {
+    $route: {
+      immediate: true,
+      async handler(to) {
+        const { articleId } = to.params;
+        // Observe o id de artigo passado à rota e carregue o objeto do artigo correspondente da API
+        if (articleId) {
+          await axios
+            .get(API_SERVER + API_ENDPOINT_ARTICLE + articleId)
+            .then(response => {
+              this.activeArticle = response.data;
+            });
+        }
+      }
+    }
+  },
+  async created() {
+    await this.fetchArticlesIds();
+    const { articleId } = this.$route.params;
+    // Se nenhum id de artigo estiver presente na url, vá para a rota do primeiro na lista de artigos
+    if (!articleId) {
+      this.$router.push({
+        name: 'App',
+        params: {
+          articleId: this.articlesIds[0]
+        }
+      });
+    }
   },
   mounted() {
     hotkeys('right', this.nextArticle);
